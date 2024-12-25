@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: fastapi-app
+  template:
+    metadata:
+      labels:
+        app: fastapi-app
+    spec:
+      containers:
+      - name: fastapi-app
+        image: thinhduckhoi/auto-ticket:IMAGE_TAG
+        ports:
+        - containerPort: 8000
+        env:
+        - name: JIRA_SERVER
+          valueFrom:
+            secretKeyRef:
+              name: jira-credentials
+              key: JIRA_SERVER
+        - name: JIRA_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: jira-credentials
+              key: JIRA_USERNAME
+        - name: JIRA_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: jira-credentials
+              key: JIRA_API_TOKEN
