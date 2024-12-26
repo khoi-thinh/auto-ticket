@@ -40,7 +40,7 @@ def create_s3_bucket(s3_client, bucket_name):
             return False
 
 def process_jira_tickets():
-    query_info = 'status = "Building" AND labels = "automated"'
+    query_info = 'status = "Work in progress" AND labels = "automated"'
     issues = jira.search_issues(query_info)
 
     for issue in issues:
