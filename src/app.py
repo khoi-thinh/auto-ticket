@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI
 from apscheduler.schedulers.background import BackgroundScheduler
 from jira import JIRA
