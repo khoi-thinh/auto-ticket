@@ -4,6 +4,9 @@ The issue is provided to the end user as a template with a fixed-format table an
 End-users enter the required information, notifying the Platform team, who validates and updates the status to "Work in progress".  
 Every minute, the app checks Jira issues, and if the status is updated to "Work in progress", it creates an S3 bucket.
 
+Template's table has the format below  
+![image](https://github.com/user-attachments/assets/5f3f3616-b931-4d9e-b948-25e544539e36)
+
 ## Deployment
 
 The app is deployed to AWS Elastic Kubernetes Service (EKS) using the following components:
