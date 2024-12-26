@@ -1,0 +1,66 @@
+name: Update K8s App Deployments
+on:
+  push:
+    branches:
+      - main  
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      DH_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+      REPO: ${{ secrets.DOCKERHUB_REPO }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build the Docker image
+        run: |
+          docker build -f Dockerfile \
+          -t "$DH_USER/$REPO:latest" \
+          -t "$DH_USER/$REPO:${{ github.sha }}" \
+          .
+
+      - name: Push the Docker image to Docker Hub
+        run: |
+          docker push "$DH_USER/$REPO" --all-tags
+
+      - name: Set image tag in deployment
+        run: |
+          IMAGE_TAG=${{ github.sha }} && \
+          chmod +w apps/deployment.yaml && \
+          sed -i.bak "s|IMAGE_TAG|${IMAGE_TAG}|g" apps/deployment.yaml && \
+          cat apps/2-deployment.yaml
+
+      - uses: azure/setup-kubectl@v3
+
+      - name: Create/Verify .kube directory
+        run: mkdir -p ~/.kube/
+
+      - name: Create kubectl config
+        run: |
+          cat << EOF >> ~/.kube/config
+          ${{ secrets.KUBECONFIG_SA }}
+          EOF
+
+      - name: Apply changes
+        run: |
+          kubectl apply -f apps/
+
+      - name: Rollout Apps
+        run: |
+          kubectl rollout restart deployment -n default py-app
