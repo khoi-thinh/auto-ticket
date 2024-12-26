@@ -16,7 +16,8 @@ spec:
       - name: fastapi-app
         image: thinhduckhoi/auto-ticket:IMAGE_TAG
         ports:
-        - containerPort: 8000
+          - name: http-port
+            containerPort: 8080
         env:
         - name: JIRA_SERVER
           valueFrom:
