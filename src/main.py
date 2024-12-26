@@ -63,10 +63,29 @@ def process_jira_tickets():
         if create_s3_bucket(s3_client, bucket_name):
             comment = f"Bucket '{bucket_name}' created successfully."
             jira.add_comment(issue, comment)
+            transition_issue_to_done(issue)
         else:
             comment = f"Bucket '{bucket_name}' already exists or there was an error."
             jira.add_comment(issue, comment)
+            transition_issue_to_pending(issue)
+            
+def transition_issue_to_done(issue):
+    transitions = jira.transitions(issue) 
+    for transition in transitions:
+        if transition['name'] == 'Mark as done': 
+            jira.transition_issue(issue, transition['id'])
+            print(f"Issue {issue.key} transitioned to Done.")
+            return
 
+def transition_issue_to_pending(issue):
+    transitions = jira.transitions(issue) 
+    print(transitions)
+    for transition in transitions:
+        if transition['name'] == 'Pending': 
+            jira.transition_issue(issue, transition['id'])
+            print(f"Issue {issue.key} transitioned to Pending.")
+            return
+            
 def parse_jira_table(table_data):
     rows = table_data.strip().split("\n")
     parsed_data = {}
