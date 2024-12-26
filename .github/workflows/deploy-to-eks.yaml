@@ -63,4 +63,4 @@ jobs:
 
       - name: Rollout App
         run: |
-          kubectl rollout restart deployment -n default py-app
+          kubectl rollout restart deployment -n default fastapi-app
