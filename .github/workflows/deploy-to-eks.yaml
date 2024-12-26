@@ -42,9 +42,9 @@ jobs:
       - name: Set image tag in deployment
         run: |
           IMAGE_TAG=${{ github.sha }} && \
-          chmod +w apps/deployment.yaml && \
-          sed -i.bak "s|IMAGE_TAG|${IMAGE_TAG}|g" apps/deployment.yaml && \
-          cat apps/deployment.yaml
+          chmod +w app/deployment.yaml && \
+          sed -i.bak "s|IMAGE_TAG|${IMAGE_TAG}|g" app/deployment.yaml && \
+          cat app/deployment.yaml
 
       - uses: azure/setup-kubectl@v3
 
@@ -59,8 +59,8 @@ jobs:
 
       - name: Apply changes
         run: |
-          kubectl apply -f apps/
+          kubectl apply -f app/
 
-      - name: Rollout Apps
+      - name: Rollout App
         run: |
           kubectl rollout restart deployment -n default py-app
