@@ -1,18 +1,18 @@
-# Use Python 3.9 as base image
+# Use the official Python image
 FROM python:3.11.4
 
-# Set the working directory
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy requirements and install dependencies
+# Copy our local src folder to /app in the container
 COPY ./src/ /app/
 
 # Run OS-level updates and install necessary dependencies
 RUN apt-get update && \
     apt-get install -y python3-venv python3-dev python3-pip
-
+    
 # Create the Python virtual environment
-RUN python3 -m venv /opt/ven
+RUN python3 -m venv /opt/venv
 
 # Upgrade pip inside the virtual environment
 RUN /opt/venv/bin/python -m pip install --upgrade pip
