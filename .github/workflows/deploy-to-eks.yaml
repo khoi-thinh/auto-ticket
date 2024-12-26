@@ -44,7 +44,7 @@ jobs:
           IMAGE_TAG=${{ github.sha }} && \
           chmod +w apps/deployment.yaml && \
           sed -i.bak "s|IMAGE_TAG|${IMAGE_TAG}|g" apps/deployment.yaml && \
-          cat apps/2-deployment.yaml
+          cat apps/deployment.yaml
 
       - uses: azure/setup-kubectl@v3
 
