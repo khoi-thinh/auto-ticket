@@ -4,6 +4,7 @@ from jira import JIRA
 import boto3
 from botocore.exceptions import ProfileNotFound, ClientError
 import os
+import json
 
 app = FastAPI()
 
@@ -14,12 +15,25 @@ JIRA_API_TOKEN = os.getenv("JIRA_API_TOKEN")
 
 jira = JIRA(server=JIRA_SERVER, basic_auth=(JIRA_USERNAME, JIRA_API_TOKEN))
 
-def get_s3_client(profile_name):
+def get_aws_credentials_from_secret(secret_name, region_name):
+    secrets_manager_client = boto3.client('secretsmanager', region_name)
     try:
-        session = boto3.Session(profile_name=profile_name)
-        return session.client('s3')
-    except ProfileNotFound:
-        return None 
+        get_secret_value_response = secrets_manager_client.get_secret_value(SecretId=secret_name)
+        secret = get_secret_value_response['SecretString']
+        credentials = json.loads(secret)
+        return credentials
+    except ClientError as e:
+        print(f"Error retrieving secret {secret_name}: {e}")
+        raise e
+
+def get_s3_client(secret_name, region_name):
+    credentials = get_aws_credentials_from_secret(secret_name, region_name)
+    session = boto3.Session(
+        aws_access_key_id=credentials['AWS_ACCESS_KEY_ID'],
+        aws_secret_access_key=credentials['AWS_SECRET_ACCESS_KEY'],
+        region_name=region_name
+    )
+    return session.client('s3')
 
 def create_s3_bucket(s3_client, bucket_name):
     try:
@@ -50,9 +64,9 @@ def process_jira_tickets():
         project_name = parsed_table.get("project_name")
         environment = parsed_table.get("environment")
         bucket_prefix = parsed_table.get("bucket_prefix")
-
+        region_name = parsed_table.get("region_name")
         profile_name = f"{project_name.lower()}_{environment.lower()}"
-        s3_client = get_s3_client(profile_name)
+        s3_client = get_s3_client(profile_name, region_name)
 
         if not s3_client:
             error_message = f"Invalid AWS profile '{profile_name}'."
