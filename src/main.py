@@ -117,12 +117,10 @@ scheduler = BackgroundScheduler()
 # Add a job to check JIRA tickets every minute
 scheduler.add_job(process_jira_tickets, "interval", minutes=1)
 
-# Start the scheduler
 @app.on_event("startup")
 def start_scheduler():
     scheduler.start()
 
-# Shutdown the scheduler on app shutdown
 @app.on_event("shutdown")
 def shutdown_scheduler():
     scheduler.shutdown()
