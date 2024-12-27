@@ -56,7 +56,11 @@ jobs:
           cat << EOF >> ~/.kube/config
           ${{ secrets.KUBECONFIG_SA }}
           EOF
-
+          
+      - name: Create JIRA secret
+        run: |
+          bash ./conf/jira-credentials.sh
+          
       - name: Apply changes
         run: |
           kubectl apply -f app/
