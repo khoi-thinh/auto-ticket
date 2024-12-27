@@ -26,7 +26,8 @@ def get_aws_credentials_from_secret(secret_name, region_name):
         print(f"Error retrieving secret {secret_name}: {e}")
         raise e
 
-def get_s3_client(secret_name, region_name):
+def get_s3_client(secret_name):
+    region_name = "us-east-1"
     credentials = get_aws_credentials_from_secret(secret_name, region_name)
     session = boto3.Session(
         aws_access_key_id=credentials['AWS_ACCESS_KEY_ID'],
@@ -35,7 +36,7 @@ def get_s3_client(secret_name, region_name):
     )
     return session.client('s3')
 
-def create_s3_bucket(s3_client, bucket_name):
+def create_s3_bucket(s3_client, bucket_name, region_name):
     try:
         s3_client.head_bucket(Bucket=bucket_name)
         print(f"Bucket '{bucket_name}' already exists.")
@@ -43,7 +44,7 @@ def create_s3_bucket(s3_client, bucket_name):
     except ClientError as e:
         if e.response['Error']['Code'] == '404':
             try:
-                s3_client.create_bucket(Bucket=bucket_name)
+                s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': region_name})
                 print(f"Bucket '{bucket_name}' created successfully.")
                 return True
             except ClientError as create_error:
@@ -66,7 +67,7 @@ def process_jira_tickets():
         bucket_prefix = parsed_table.get("bucket_prefix")
         region_name = parsed_table.get("region_name")
         profile_name = f"{project_name.lower()}_{environment.lower()}"
-        s3_client = get_s3_client(profile_name, region_name)
+        s3_client = get_s3_client(profile_name)
 
         if not s3_client:
             error_message = f"Invalid AWS profile '{profile_name}'."
@@ -74,7 +75,7 @@ def process_jira_tickets():
             continue
 
         bucket_name = f"{bucket_prefix}-{project_name.lower()}-{environment.lower()}"
-        if create_s3_bucket(s3_client, bucket_name):
+        if create_s3_bucket(s3_client, bucket_name, region_name):
             comment = f"Bucket '{bucket_name}' created successfully."
             jira.add_comment(issue, comment)
             transition_issue_to_done(issue)
