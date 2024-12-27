@@ -132,3 +132,7 @@ def start_scheduler():
 @app.on_event("shutdown")
 def shutdown_scheduler():
     scheduler.shutdown()
+
+@app.get("/health")
+def health():
+    return {"message": "FastAPI is running, and the scheduler is processing every minute!"}
