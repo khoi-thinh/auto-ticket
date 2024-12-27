@@ -44,8 +44,15 @@ def create_s3_bucket(s3_client, bucket_name, region_name):
     except ClientError as e:
         if e.response['Error']['Code'] == '404':
             try:
-                s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': region_name})
-                print(f"Bucket '{bucket_name}' created successfully.")
+                # For us-east-1, don't specify LocationConstraint
+                if region_name == "us-east-1":
+                    s3_client.create_bucket(Bucket=bucket_name)
+                else:
+                    s3_client.create_bucket(
+                        Bucket=bucket_name,
+                        CreateBucketConfiguration={'LocationConstraint': region_name}
+                    )
+                print(f"Bucket '{bucket_name}' created successfully in region '{region_name}'.")
                 return True
             except ClientError as create_error:
                 print(f"Error creating bucket '{bucket_name}': {create_error}")
