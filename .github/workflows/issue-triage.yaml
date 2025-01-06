@@ -10,9 +10,9 @@ jobs:
       - name: Label issue
         run: |
           if (contains(github.event.issue.body, 'bug')) {
-            echo '::set-output name=label::bug';
+            echo '::add-labels: bug';
           } else if (contains(github.event.issue.body, 'feature')) {
-            echo '::set-output name=label::feature';
+            echo '::add-labels: feature';
           } else {
-            echo '::set-output name=label::needs-triage';
+            echo '::add-labels: needs-triage';
           }
