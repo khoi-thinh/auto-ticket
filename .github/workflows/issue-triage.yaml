@@ -14,5 +14,6 @@ jobs:
           } else if (contains(github.event.issue.body, 'feature')) {
             echo '::add-labels: feature';
           } else {
+            echo 'Labeling issue as needs-triage';
             echo '::add-labels: needs-triage';
           }
